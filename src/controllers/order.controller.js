@@ -291,6 +291,5 @@ export {
     addOrder,
     cancelledOrder,
     getOrder,
-    getOrderById,
-    deliveredOrder
+    getOrderById
 }
