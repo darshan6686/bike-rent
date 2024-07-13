@@ -6,7 +6,8 @@ import {
     getBikeByAdmin,
     getBikeById,
     updateBikeDetails,
-    updateBikeImage
+    updateBikeImage,
+    updateBikeStock
 } from "../controllers/bike.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 
@@ -31,5 +32,6 @@ router.route("/update-image/:bikeId").patch(
     upload.single("image"),
     updateBikeImage
 )
+router.route("/update-stock/:bikeId").patch(updateBikeStock)
 
 export default router

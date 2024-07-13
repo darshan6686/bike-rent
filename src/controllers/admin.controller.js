@@ -1,4 +1,5 @@
 import { Admin } from "../models/admin.model.js";
+import { Order } from "../models/order.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -154,9 +155,8 @@ const profile = asyncHandler(async(req,res) => {
 
 const refreshAccessToken = asyncHandler(async(req,res) => {
     const incommingRefreshToken = req.cookies.adminRefreshToken || req.body.adminRefreshToken
-    console.log(incommingRefreshToken);
-
-    if (!refreshAccessToken) {
+    
+    if (!incommingRefreshToken) {
         throw new ApiError(400, "unauthorized request")
     }
 
@@ -169,19 +169,19 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
         const admin = await Admin.findById(decodedToken?._id)
 
         if (!admin) {
-            throw new ApiError(400, "Invalid refresh token")
+            throw new ApiError(400, "Invalid token")
         }
 
-        if (incommingRefreshToken !== admin.refershToken) {
-            throw new ApiError(400, "expire or used refresh token")
+        if (incommingRefreshToken !== admin.refreshToken) {
+            throw new ApiError(400, "Invalid token or token used")
         }
-
-        const { accessToken, refershToken } = generateAccessTokenAndRefreshToken(admin._id)
 
         const options = {
             httpOnly: true,
             secure: true
         }
+
+        const {accessToken, refershToken} = await generateAccessTokenAndRefreshToken(admin._id)
 
         return res
         .status(200)
@@ -192,13 +192,14 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
                 200,
                 {
                     accessToken,
-                    refershToken
+                    refreshToken: refershToken
                 },
                 "token refreshed successfully"
             )
         )
+        
     } catch (error) {
-        throw new ApiError(400, "Invalid refresh token")
+        throw new ApiError(400, "Invalid refesh token")
     }
 })
 
@@ -269,6 +270,77 @@ const changePassword = asyncHandler(async(req,res) => {
 })
 
 
+const getAllOrders = asyncHandler(async(req,res) => {
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                $nor: [{
+                    status: "CANCELLED"
+                }],
+                saller: req.admin?._id
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user",
+                foreignField: "_id",
+                as: "user",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            email: 1,
+                            profileImage: 1
+                        }   
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        {
+            $lookup: {
+                from: "bikes",
+                localField: "products.bikes",
+                foreignField: "_id",
+                as: "products.bikes",
+                pipeline: [
+                    {
+                        $project: {
+                            bikeName: 1,
+                            image: 1,
+                            price: 1,
+                            deposite: 1,
+                            category: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: "$products.bikes"
+        },
+        {
+            $sort: {
+                updatedAt: -1
+            }
+        }
+    ])
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            orders,
+            "All orders fetched successfully"
+        )
+    )
+})
+
+
 export{
     registerAdmin,
     login,
@@ -276,5 +348,6 @@ export{
     profile,
     refreshAccessToken,
     updateAccountDetail,
-    changePassword
+    changePassword,
+    getAllOrders
 }

@@ -193,7 +193,7 @@ const getOrder = asyncHandler(async(req,res) => {
         },
         {
             $sort: {
-                createdAt: -1
+                updatedAt: -1
             }
         }
     ])
@@ -286,10 +286,47 @@ const getOrderById = asyncHandler(async(req,res) => {
 })
 
 
+const deliveredOrder = asyncHandler(async(req,res) => {
+    const {orderId} = req.params
+
+    if (!orderId) {
+        throw new ApiError(400, "orderId is missing")
+    }
+
+    const order = await Order.findOneAndUpdate(
+        {
+            _id: orderId,
+            status: "PROCESSING"
+        },
+        {
+            $set: {
+                status: "delivered"
+            }
+        },
+        {
+            new: true
+        }
+    )
+    if (!order) {
+        throw new ApiError(400, "order not found or order has cancelled")
+    }
+    
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            order,
+            "order delivered successfully"
+        )
+    )
+})
+
 
 export {
     addOrder,
     cancelledOrder,
     getOrder,
-    getOrderById
+    getOrderById,
+    deliveredOrder
 }

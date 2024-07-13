@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     changePassword,
+    getAllOrders,
     login,
     logout,
     profile,
@@ -20,6 +21,8 @@ router.route("/profile").get(verifyJWTAdmin, profile)
 router.route("/logout").delete(verifyJWTAdmin, logout)
 router.route("/update-account-details").patch(verifyJWTAdmin, updateAccountDetail)
 router.route("/change-password").patch(verifyJWTAdmin, changePassword)
-router.route("/refresh-token").post(verifyJWTAdmin, refreshAccessToken)
+router.route("/refresh-token").post(refreshAccessToken)
+
+router.route("/orders").get(verifyJWTAdmin, getAllOrders)
 
 export default router

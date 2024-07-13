@@ -154,7 +154,7 @@ const getBikeById = asyncHandler(async(req,res) => {
 
 const updateBikeDetails = asyncHandler(async(req,res) => {
     const {bikeId} = req.params
-    const {bikeName, category, price, deposite, description, stock, policies, verification} = req.body
+    const {bikeName, category, price, deposite, description, policies, verification} = req.body
 
     if (![bikeName, category, price, deposite, description, stock, policies, verification].some( details => {
         return details.trim()
@@ -171,7 +171,6 @@ const updateBikeDetails = asyncHandler(async(req,res) => {
                 price,
                 deposite,
                 description,
-                stock,
                 policies,
                 verification
             }
@@ -273,11 +272,44 @@ const updateBikeImage = asyncHandler(async(req,res) => {
 })
 
 
+const updateBikeStock = asyncHandler(async(req,res) => {
+    const {bikeId} = req.params
+    const {stock} = req.body
+
+    if (!stock) {
+        throw new ApiError(400, "Stock field is required")
+    }
+
+    const bike = await Bike.findByIdAndUpdate(
+        bikeId,
+        {
+            $set: {
+                stock
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            bike,
+            "bike stock updated successfully"
+        )
+    )
+})
+
+
 export {
     addBike,
     getBikeByAdmin,
     getBikeById,
     updateBikeDetails,
     deleteBike,
-    updateBikeImage
+    updateBikeImage,
+    updateBikeStock
 }
