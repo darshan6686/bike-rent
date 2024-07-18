@@ -300,7 +300,7 @@ const deliveredOrder = asyncHandler(async(req,res) => {
         },
         {
             $set: {
-                status: "delivered"
+                status: "DELIVERED"
             }
         },
         {

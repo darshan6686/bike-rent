@@ -270,77 +270,6 @@ const changePassword = asyncHandler(async(req,res) => {
 })
 
 
-const getAllOrders = asyncHandler(async(req,res) => {
-    const orders = await Order.aggregate([
-        {
-            $match: {
-                $nor: [{
-                    status: "CANCELLED"
-                }],
-                saller: req.admin?._id
-            }
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "user",
-                foreignField: "_id",
-                as: "user",
-                pipeline: [
-                    {
-                        $project: {
-                            username: 1,
-                            email: 1,
-                            profileImage: 1
-                        }   
-                    }
-                ]
-            }
-        },
-        {
-            $unwind: "$user"
-        },
-        {
-            $lookup: {
-                from: "bikes",
-                localField: "products.bikes",
-                foreignField: "_id",
-                as: "products.bikes",
-                pipeline: [
-                    {
-                        $project: {
-                            bikeName: 1,
-                            image: 1,
-                            price: 1,
-                            deposite: 1,
-                            category: 1
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            $unwind: "$products.bikes"
-        },
-        {
-            $sort: {
-                updatedAt: -1
-            }
-        }
-    ])
-
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            orders,
-            "All orders fetched successfully"
-        )
-    )
-})
-
-
 export{
     registerAdmin,
     login,
@@ -348,6 +277,5 @@ export{
     profile,
     refreshAccessToken,
     updateAccountDetail,
-    changePassword,
-    getAllOrders
+    changePassword
 }

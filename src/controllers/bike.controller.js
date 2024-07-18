@@ -283,8 +283,8 @@ const updateBikeStock = asyncHandler(async(req,res) => {
     const bike = await Bike.findByIdAndUpdate(
         bikeId,
         {
-            $set: {
-                stock
+            $inc: {
+                stock: stock
             }
         },
         {
@@ -298,7 +298,7 @@ const updateBikeStock = asyncHandler(async(req,res) => {
         new ApiResponse(
             200,
             bike,
-            "bike stock updated successfully"
+            "bike stock added successfully"
         )
     )
 })

@@ -34,9 +34,11 @@ app.use("/api/v1/order", orderRoute)
 
 import adminRoute from "./routes/admin.routes.js"
 import bikeRoute from "./routes/bike.routes.js"
+import adminDashboardRoute from "./routes/admin.dashboard.routes.js"
 
 // admin routes
 app.use("/api/v1/admin", adminRoute)
 app.use("/api/v1/bikes", bikeRoute)
+app.use("/api/v1/dashboard", adminDashboardRoute)
 
 export { app }
